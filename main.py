@@ -6,6 +6,8 @@ import logging
 import traceback
 import notify
 import check
+import sys
+import os
 
 #引入任务模块
 import scheduler
@@ -31,10 +33,15 @@ def readJson():
 
 def main(event, context):
     ip,country=check.getnetinfo()
-    logging.info('【自检】: ' + str(ip) +'（'+ str(country) +'）')
-    logging.info('【自检】: 当前运行系统' + check.system())
+    logging.info('【网络自检】: ' + str(ip) +'（'+ str(country) +'）')
+    logging.info('【环境自检】: ' + check.system()+'('+check.cpu()+')')
+    if check.system() == 'Linux':
+        virtual_mode = str(check.virtual())
+        logging.info('【环境自检】: 虚拟化类型：' + virtual_mode)
+        if virtual_mode != 'none':
+            logging.info('【环境自检】:您的系统异常，但本版本未做限制，通过！ ')
     if str(country)!='China':
-        logging.info('【自检】:您的地址异常，但本版本未做限制，通过！ ')
+        logging.info('【网络自检】:您的网络异常，但本版本未做限制，通过！ ')
     users = readJson()
     for user in users:
         #清空上一个用户的日志记录
@@ -49,11 +56,10 @@ def main(event, context):
         #任务调度代码
         if client != False:
             scheduler.runscheduler(client,username,lotteryNum)
-            
-            
-            
-            
-            
+        else:
+            logging.error('发生登陆错误，退出')
+            sys.exit()
+        scheduler.resetJson('./','./',0)
         if ('email' in user) :
             notify.sendEmail(user['email'])
         if ('dingtalkWebhook' in user) :

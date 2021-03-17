@@ -6,13 +6,17 @@
 import requests
 import platform
 import json
+import subprocess
 
 
-def getnetinfo(): 
-    netinfo = requests.get('http://ip-api.com/json/').text
-    ip = json.loads(netinfo).get('query')
-    country = json.loads(netinfo).get('country')
-    return ip,country
+def getnetinfo():
+    try: 
+        netinfo = requests.get('http://ip-api.com/json/').text
+        ip = json.loads(netinfo).get('query')
+        country = json.loads(netinfo).get('country')
+        return ip,country
+    except:
+        return "0.0.0.0","unknown"
 
 def system():
     if(platform.system()=='Windows'):
@@ -23,5 +27,11 @@ def system():
         return  'Darwin'
     else:
         return 'Other'
+
+def cpu():
+    return platform.machine()
+
+def virtual():
+    return subprocess.getoutput('systemd-detect-virt')
 
    
